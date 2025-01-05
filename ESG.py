@@ -1,43 +1,23 @@
-from flask import Flask, render_template, request
-from sklearn.linear_model import LinearRegression
-from sklearn.ensemble import RandomForestClassifier
-from sklearn.metrics import accuracy_score
 import pandas as pd
 
-app = Flask(__name__)
+# Sample ESG Data (can be replaced with real data from APIs or databases)
+data = {
+    "Project": ["Solar Farm", "Wind Turbine", "Biofuel Plant", "Eco Housing", "Green Data Center"],
+    "Environmental": [85, 90, 75, 70, 95],
+    "Social": [80, 85, 70, 65, 90],
+    "Governance": [88, 86, 80, 75, 92],
+    "Cost (M)": [3, 2, 2, 4, 5],
+    "Risk Level": ["Low", "Medium", "Medium", "High", "Low"]
+}
 
-data_path = "green_finance_data.csv"
-green_finance_data = pd.read_csv(data_path)
+# Create a DataFrame
+esg_data = pd.DataFrame(data)
 
-roi_predictor = LinearRegression()
-roi_predictor.fit(
-    green_finance_data[["ESG_Score", "Budget"]],
-    green_finance_data["ROI"]
-)
+# Compute overall ESG score (Weighted Average)
+esg_data["ESG Score"] = (esg_data["Environmental"] * 0.4 +
+                         esg_data["Social"] * 0.3 +
+                         esg_data["Governance"] * 0.3)
 
-success_predictor = RandomForestClassifier()
-success_predictor.fit(
-    green_finance_data[["ESG_Score", "Risk"]],
-    green_finance_data["Success"]
-)
-
-@app.route('/')
-def index():
-    return render_template('index.html')
-
-@app.route('/predict', methods=['POST'])
-def predict():
-    esg_score = float(request.form['esg_score'])
-    budget = float(request.form['budget'])
-
-    predicted_roi = roi_predictor.predict([[esg_score, budget]])[0]
-    predicted_success = success_predictor.predict([[esg_score, 0]])[0]  
-
-    return render_template(
-        'results.html',
-        predicted_roi=predicted_roi,
-        predicted_success=predicted_success
-    )
-
-if __name__ == '__main__':
-    app.run(debug=True)
+# Display the ESG Data
+print("ESG Data:")
+print(esg_data)
